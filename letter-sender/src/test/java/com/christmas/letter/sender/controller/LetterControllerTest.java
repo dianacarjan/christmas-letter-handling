@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(LetterController.class)
@@ -29,7 +30,7 @@ class LetterControllerTest {
     private LetterSenderService letterSenderService;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @Test
     void should_returnCreatedStatus_ifValidRequest() throws Exception {
@@ -53,7 +54,8 @@ class LetterControllerTest {
         mockMvc.perform(post("/api/v1/christmas-letters")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(christmasLetter)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isInternalServerError())
+                .andExpect((jsonPath("$.message").value("Publishing message to SNS failed!")));
     }
 
     @ParameterizedTest
@@ -63,7 +65,8 @@ class LetterControllerTest {
         mockMvc.perform(post("/api/v1/christmas-letters")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(letter)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed!"));
     }
 
     private static Stream<Arguments> provideInvalidLetters() {
