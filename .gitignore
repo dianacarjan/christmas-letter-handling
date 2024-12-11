@@ -50,6 +50,7 @@ target/
 /nbdist/
 /.nb-gradle/
 build/
+localstack-data/
 
 ### VS Code ###
 .vscode/

@@ -1,0 +1,52 @@
+services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - 4566:4566
+      - 8000:8000
+    environment:
+      - SERVICES=sns,sqs,dynamodb
+      - DEBUG=1
+      - PERSISTENCE=1
+    volumes:
+      - ./localstack-data:/var/lib/localstack
+      - ./init.sh:/etc/localstack/init/ready.d/init.sh
+    networks:
+      - christmas
+
+  letter-sender-service:
+    container_name: letter-sender-service
+    image: letter-sender-service
+    platform: linux/amd64
+    ports:
+      - 8081:8081
+    depends_on:
+      - localstack
+    environment:
+      spring.cloud.aws.sns.endpoint: 'http://localstack:4566'
+      spring.cloud.aws.credentials.access-key: test
+      spring.cloud.aws.credentials.secret-key: test
+      spring.cloud.aws.sns.region: 'us-east-1'
+      letter-sender.aws.sns.topic-arn: 'arn:aws:sns:us-east-1:000000000000:christmas-letter-creation'
+    networks:
+      - christmas
+
+  letter-processor-service:
+    container_name: letter-processor-service
+    image: letter-processor-service
+    platform: linux/amd64
+    ports:
+      - 8082:8082
+    depends_on:
+      - localstack
+    environment:
+      spring.cloud.aws.sqs.endpoint: 'http://localstack:4566'
+      spring.cloud.aws.credentials.access-key: test
+      spring.cloud.aws.credentials.secret-key: test
+      spring.cloud.aws.sqs.region: 'us-east-1'
+      letter-processor.aws.sqs.queue-url: 'http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/christmas-letter-processing'
+    networks:
+      - christmas
+
+networks:
+  christmas:
