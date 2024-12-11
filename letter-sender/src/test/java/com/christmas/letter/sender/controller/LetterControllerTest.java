@@ -60,20 +60,21 @@ class LetterControllerTest {
 
     @ParameterizedTest
     @MethodSource("provideInvalidLetters")
-    void should_returnBadRequest_ifInvalidRequest(Letter letter) throws Exception {
+    void should_returnBadRequest_ifInvalidRequest(Letter letter, String expectedOutput) throws Exception {
         // Arrange & Act & Assert
         mockMvc.perform(post("/api/v1/christmas-letters")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(letter)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Validation failed!"));
+                .andExpect(jsonPath("$.message").value("Validation failed!"))
+                .andExpect(jsonPath("$.details[0]").value(expectedOutput));
     }
 
     private static Stream<Arguments> provideInvalidLetters() {
         return Stream.of(
-                Arguments.of(new Letter("23", "Jane", "Some books", "Berlin")),
-                Arguments.of(new Letter("siobhan@example.com", "Siobhan", null, "Munich")),
-                Arguments.of(new Letter("siobhan@example.com", "Siobhan", "More books", ""))
+                Arguments.of(new Letter("23", "Jane", "Some books", "Berlin"), "Email should be valid"),
+                Arguments.of(new Letter("siobhan@example.com", "Siobhan", null, "Munich"), "Every child ought to have a Christmas wish list"),
+                Arguments.of(new Letter("siobhan@example.com", "Siobhan", "More books", ""), "Location is required")
         );
     }
 }

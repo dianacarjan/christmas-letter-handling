@@ -63,6 +63,7 @@ class ChristmasLetterIntegrationTest extends LocalStackContainerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(letter))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Validation failed!"));
+                .andExpect(jsonPath("$.message").value("Validation failed!"))
+                .andExpect(jsonPath("$.details[0]").value("Email should be valid"));
     }
 }
