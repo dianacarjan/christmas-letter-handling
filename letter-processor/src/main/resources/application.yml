@@ -9,6 +9,9 @@ spring:
         secret-key: ${AWS_SECRET_KEY}
       sqs:
         region: ${AWS_SQS_REGION}
+      dynamodb:
+        endpoint: ${AWS_DYNAMODB_ENDPOINT}
+        region: ${AWS_DYNAMODB_REGION}
 
 letter-processor:
     aws:

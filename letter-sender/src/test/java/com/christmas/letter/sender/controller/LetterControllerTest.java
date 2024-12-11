@@ -1,11 +1,11 @@
 package com.christmas.letter.sender.controller;
 
+import com.christmas.letter.sender.helper.LetterUtils;
 import com.christmas.letter.sender.model.Letter;
 import com.christmas.letter.sender.service.LetterSenderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,8 +13,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.MessagingException;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.stream.Stream;
 
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -32,13 +30,15 @@ class LetterControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private static final String CREATE_LETTER_API_PATH = "/api/v1/christmas-letters";
+
     @Test
     void should_returnCreatedStatus_ifValidRequest() throws Exception {
         // Arrange
-        Letter christmasLetter = new Letter("siobhan@example.com", "Siobhan", "books", "Munich");
+        Letter christmasLetter = LetterUtils.generateLetter(LetterUtils.generateAddress());
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/christmas-letters")
+        mockMvc.perform(post(CREATE_LETTER_API_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(christmasLetter)))
                 .andExpect(status().isCreated());
@@ -47,11 +47,11 @@ class LetterControllerTest {
     @Test
     void should_returnInternalErrorServer_ifMessagingFails() throws Exception {
         // Arrange
-        Letter christmasLetter = new Letter("siobhan@example.com", "Siobhan", "candy", "Bruges");
+        Letter christmasLetter = LetterUtils.generateLetter(LetterUtils.generateAddress());
         doThrow(MessagingException.class).when(letterSenderService).sendLetter(christmasLetter);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/christmas-letters")
+        mockMvc.perform(post(CREATE_LETTER_API_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(christmasLetter)))
                 .andExpect(status().isInternalServerError())
@@ -59,22 +59,14 @@ class LetterControllerTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideInvalidLetters")
+    @MethodSource("com.christmas.letter.sender.helper.LetterUtils#provideInvalidLetters")
     void should_returnBadRequest_ifInvalidRequest(Letter letter, String expectedOutput) throws Exception {
         // Arrange & Act & Assert
-        mockMvc.perform(post("/api/v1/christmas-letters")
+        mockMvc.perform(post(CREATE_LETTER_API_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(letter)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Validation failed!"))
                 .andExpect(jsonPath("$.details[0]").value(expectedOutput));
-    }
-
-    private static Stream<Arguments> provideInvalidLetters() {
-        return Stream.of(
-                Arguments.of(new Letter("23", "Jane", "Some books", "Berlin"), "Email should be valid"),
-                Arguments.of(new Letter("siobhan@example.com", "Siobhan", null, "Munich"), "Every child ought to have a Christmas wish list"),
-                Arguments.of(new Letter("siobhan@example.com", "Siobhan", "More books", ""), "Location is required")
-        );
     }
 }

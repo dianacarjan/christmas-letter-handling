@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class LetterProcessorApplication {
 
-	public static void main(String... args) {
-		SpringApplication.run(LetterProcessorApplication.class, args);
-	}
+    public static void main(String... args) {
+        SpringApplication.run(LetterProcessorApplication.class, args);
+    }
 }
