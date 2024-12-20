@@ -25,7 +25,6 @@
 	<modules>
 		<module>letter-sender</module>
 		<module>letter-processor</module>
-		<module>integration-test</module>
 	</modules>
 
 	<dependencies>

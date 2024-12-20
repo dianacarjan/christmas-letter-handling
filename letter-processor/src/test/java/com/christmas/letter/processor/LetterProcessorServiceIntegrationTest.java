@@ -87,7 +87,10 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.pageable.pageSize").value(10))
+                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageable.offset").value(0));
     }
 
     @Test
