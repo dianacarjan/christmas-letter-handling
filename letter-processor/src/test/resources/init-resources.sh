@@ -1,6 +1,19 @@
 #!/bin/bash
-topic_name="christmas-letter-creation"
-queue_name="christmas-letter-processing"
+
+table_name="ChristmasLetters"
+
+awslocal dynamodb create-table --table-name $table_name \
+  --attribute-definitions \
+      AttributeName=Email,AttributeType=S \
+  --key-schema \
+      AttributeName=Email,KeyType=HASH \
+  --provisioned-throughput \
+      ReadCapacityUnits=10,WriteCapacityUnits=5
+
+sleep 2
+
+topic_name="test-topic"
+queue_name="test-queue"
 
 sns_arn_prefix="arn:aws:sns:us-east-1:000000000000"
 sqs_arn_prefix="arn:aws:sqs:us-east-1:000000000000"

@@ -25,7 +25,6 @@
 	<modules>
 		<module>letter-sender</module>
 		<module>letter-processor</module>
-		<module>integration-test</module>
 	</modules>
 
 	<dependencies>
@@ -58,6 +57,16 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-testcontainers</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>localstack</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

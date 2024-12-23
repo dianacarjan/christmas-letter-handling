@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 public class LetterSenderService {
 
     private final SnsTemplate snsTemplate;
-    private final SnsConfigProperties snsConfigProperties;
 
+    private final SnsConfigProperties snsConfigProperties;
 
     public void sendLetter(Letter letter) {
         final String topicArn = snsConfigProperties.getTopicArn();

@@ -1,6 +1,7 @@
 package com.christmas.letter.sender.service;
 
 import com.christmas.letter.sender.config.SnsConfigProperties;
+import com.christmas.letter.sender.helper.LetterUtils;
 import com.christmas.letter.sender.model.Letter;
 import io.awspring.cloud.sns.core.SnsTemplate;
 import org.junit.jupiter.api.Test;
@@ -23,9 +24,9 @@ class LetterSenderServiceTest {
     private LetterSenderService letterSenderService;
 
     @Test
-    void givenLetter_whenSendLetter_letterPublishedToSns(){
+    void givenLetter_whenSendLetter_letterPublishedToSns() {
         // Arrange
-        Letter letter = new Letter("siobhan@example.com", "Siobhan", "books", "Frankfurt");
+        Letter letter = LetterUtils.generateLetter(LetterUtils.generateAddress());
         String topicArn = "arn:aws:sns:us-east-1:000000000000:letter-created";
 
         when(snsConfigProperties.getTopicArn()).thenReturn(topicArn);
