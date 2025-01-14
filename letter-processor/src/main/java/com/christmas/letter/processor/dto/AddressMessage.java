@@ -8,6 +8,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AddressMessage {
         @NotBlank(message = "Street is required")
         String street;

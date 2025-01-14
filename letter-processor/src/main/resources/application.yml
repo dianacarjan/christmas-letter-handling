@@ -1,7 +1,6 @@
 server:
   port: 8082
 
-spring:
   cloud:
     aws:
       credentials:
@@ -12,7 +11,11 @@ spring:
       dynamodb:
         endpoint: ${AWS_DYNAMODB_ENDPOINT}
         region: ${AWS_DYNAMODB_REGION}
-
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      ttl: ${REDIS_TTL}
 letter-processor:
     aws:
       sqs:

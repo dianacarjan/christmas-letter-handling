@@ -39,6 +39,7 @@ services:
       - 8082:8082
     depends_on:
       - localstack
+      - redis-service
     environment:
       spring.cloud.aws.credentials.access-key: test
       spring.cloud.aws.credentials.secret-key: test
@@ -46,9 +47,24 @@ services:
       spring.cloud.aws.dynamodb.region: 'us-east-1'
       spring.cloud.aws.sqs.endpoint: 'http://localstack:4566'
       spring.cloud.aws.sqs.region: 'us-east-1'
+      spring.data.redis.host: 'redis-service'
+      spring.data.redis.port: '6379'
+      spring.data.redis.ttl: '60'
       letter-processor.aws.sqs.queue-url: 'http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/christmas-letter-processing'
     networks:
       - christmas
 
+  redis-service:
+    container_name: redis-service
+    image: redis:latest
+    ports:
+      - 6379:6379
+    command: [ "redis-server" ]
+    volumes:
+      - redis-data:/data
+    networks:
+      - christmas
 networks:
   christmas:
+volumes:
+  redis-data:

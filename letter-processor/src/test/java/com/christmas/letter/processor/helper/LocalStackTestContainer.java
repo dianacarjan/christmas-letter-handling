@@ -3,6 +3,7 @@ package com.christmas.letter.processor.helper;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.localstack.LocalStackContainer;
@@ -14,12 +15,13 @@ import org.testcontainers.utility.MountableFile;
 
 @Slf4j
 @Testcontainers
-public class LocalStackTestContainer {
-    private static final String LOCAL_STACK_VERSION = "localstack/localstack:3.4";
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+public abstract class LocalStackTestContainer extends RedisTestContainer {
+    private static final String LOCAL_STACK_VERSION = "localstack/localstack:latest";
     private static final String CONTAINER_PATH = "/etc/localstack/init/ready.d/init-resources.sh";
 
     protected static final LocalStackContainer localStackContainer = new LocalStackContainer(DockerImageName.parse(LOCAL_STACK_VERSION))
-            .withCopyFileToContainer(MountableFile.forClasspathResource("init-resources.sh", 0744), CONTAINER_PATH)
+            .withCopyFileToContainer(MountableFile.forClasspathResource("init-resources.sh", 484), CONTAINER_PATH)
             .withServices(LocalStackContainer.Service.SNS, LocalStackContainer.Service.SQS, LocalStackContainer.Service.DYNAMODB)
             .waitingFor(Wait.forLogMessage(".*Successfully initialized resources.*", 1));
 
