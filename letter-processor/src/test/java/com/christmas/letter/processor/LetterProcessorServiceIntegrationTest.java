@@ -1,6 +1,5 @@
 package com.christmas.letter.processor;
 
-import com.christmas.letter.processor.config.TestSecurityConfig;
 import com.christmas.letter.processor.dto.AddressMessage;
 import com.christmas.letter.processor.dto.LetterMessage;
 import com.christmas.letter.processor.helper.LetterUtils;
@@ -19,7 +18,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -41,7 +39,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith(OutputCaptureExtension.class)
-@Import(TestSecurityConfig.class)
 @TestPropertySource("classpath:config-test.properties")
 class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
 

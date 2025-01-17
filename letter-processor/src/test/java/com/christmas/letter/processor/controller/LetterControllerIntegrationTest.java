@@ -1,6 +1,5 @@
 package com.christmas.letter.processor.controller;
 
-import com.christmas.letter.processor.config.TestSecurityConfig;
 import com.christmas.letter.processor.helper.LetterUtils;
 import com.christmas.letter.processor.helper.LocalStackTestContainer;
 import com.christmas.letter.processor.model.Letter;
@@ -13,7 +12,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -29,7 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 @TestPropertySource("classpath:config-test.properties")
 class LetterControllerIntegrationTest extends LocalStackTestContainer {
     @Autowired

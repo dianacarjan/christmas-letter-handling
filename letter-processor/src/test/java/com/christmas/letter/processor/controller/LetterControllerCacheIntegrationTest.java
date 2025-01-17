@@ -1,6 +1,5 @@
 package com.christmas.letter.processor.controller;
 
-import com.christmas.letter.processor.config.TestSecurityConfig;
 import com.christmas.letter.processor.helper.LetterUtils;
 import com.christmas.letter.processor.helper.RedisTestContainer;
 import com.christmas.letter.processor.listener.LetterSqsListener;
@@ -18,7 +17,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -41,7 +39,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @EnableAutoConfiguration(exclude = {DynamoDbAutoConfiguration.class})
 @ExtendWith(MockitoExtension.class)
-@Import(TestSecurityConfig.class)
 @TestPropertySource("classpath:config-test.properties")
 class LetterControllerCacheIntegrationTest extends RedisTestContainer {
     @Autowired
