@@ -1,5 +1,6 @@
 package com.christmas.letter.processor;
 
+import com.christmas.letter.processor.config.TestSecurityConfig;
 import com.christmas.letter.processor.dto.AddressMessage;
 import com.christmas.letter.processor.dto.LetterMessage;
 import com.christmas.letter.processor.helper.LetterUtils;
@@ -9,7 +10,6 @@ import com.christmas.letter.processor.model.Letter;
 import com.christmas.letter.processor.repository.LetterRepository;
 import io.awspring.cloud.sns.core.SnsTemplate;
 import io.awspring.cloud.sqs.operations.SqsTemplate;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,8 +19,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -31,15 +33,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Slf4j
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith(OutputCaptureExtension.class)
+@Import(TestSecurityConfig.class)
 @TestPropertySource("classpath:config-test.properties")
 class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
 
@@ -92,6 +94,7 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
     }
 
     @Test
+    @WithMockUser(roles={"SANTA"})
     void givenGetRequest_whenGetAllMethod_thenReturnAllSavedLetters(CapturedOutput output) throws Exception {
         // Arrange
         LetterMessage letterPayload = LetterUtils.generateLetterPayload();
@@ -113,6 +116,7 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
     }
 
     @Test
+    @WithMockUser(roles={"SANTA"})
     void givenEmail_whenGetByEmail_thenReturnSavedLetter(CapturedOutput output) throws Exception {
         // Arrange
         LetterMessage letterPayload = LetterUtils.generateLetterPayload();
@@ -133,7 +137,7 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
                 .andExpect(jsonPath("$.address.zipCode").value(addressPayload.getZipCode()));
 
         assertThat(redisTemplate.hasKey(String.format("60m-letter::%s", letterPayload.getEmail()))).isTrue();
-        assertThat(Objects.requireNonNull(redisTemplate.keys("60m-letters:*")).size()).isZero();
+        assertThat(Objects.requireNonNull(redisTemplate.keys("60m-letters:*"))).isEmpty();
     }
 
     @Test

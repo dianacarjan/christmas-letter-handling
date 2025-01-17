@@ -1,5 +1,6 @@
 package com.christmas.letter.processor.controller;
 
+import com.christmas.letter.processor.config.TestSecurityConfig;
 import com.christmas.letter.processor.helper.LetterUtils;
 import com.christmas.letter.processor.helper.LocalStackTestContainer;
 import com.christmas.letter.processor.model.Letter;
@@ -12,8 +13,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestSecurityConfig.class)
 @TestPropertySource("classpath:config-test.properties")
 class LetterControllerIntegrationTest extends LocalStackTestContainer {
     @Autowired
@@ -43,6 +47,7 @@ class LetterControllerIntegrationTest extends LocalStackTestContainer {
 
     @ParameterizedTest
     @MethodSource("provideLetters")
+    @WithMockUser(roles = {"SANTA"})
     void givenPage_whenGetMethod_thenReturnPageLetters(Pageable pageable, List<Letter> letters) throws Exception {
         // Arrange
         letterRepository.saveAll(letters);
@@ -60,6 +65,7 @@ class LetterControllerIntegrationTest extends LocalStackTestContainer {
     }
 
     @Test
+    @WithMockUser(roles = {"SANTA"})
     void givenUnsavedEmail_whenGetByEmail_thenThrowNotFoundException() throws Exception {
         // Arrange
         String email = "test@example.com";
@@ -71,6 +77,7 @@ class LetterControllerIntegrationTest extends LocalStackTestContainer {
     }
 
     @Test
+    @WithMockUser(roles = {"SANTA"})
     void givenInvalidEmail_whenGetByEmail_thenThrowValidationException() throws Exception {
         // Arrange
         String email = "invalid_email";

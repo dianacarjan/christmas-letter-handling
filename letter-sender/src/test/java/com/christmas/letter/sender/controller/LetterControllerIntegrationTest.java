@@ -1,5 +1,6 @@
 package com.christmas.letter.sender.controller;
 
+import com.christmas.letter.sender.config.TestSecurityConfig;
 import com.christmas.letter.sender.helper.LetterUtils;
 import com.christmas.letter.sender.helper.LocalStackTestContainer;
 import com.christmas.letter.sender.model.Letter;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith(OutputCaptureExtension.class)
+@Import(TestSecurityConfig.class)
 @TestPropertySource("classpath:config-test.properties")
 class LetterControllerIntegrationTest extends LocalStackTestContainer {
     @Autowired

@@ -1,6 +1,7 @@
 server:
   port: 8082
 
+spring:
   cloud:
     aws:
       credentials:
@@ -16,7 +17,20 @@ server:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       ttl: ${REDIS_TTL}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER:http://localhost:7080/realms/christmasletterhandlingdev}
+          jwk-set-uri: ${JWK_URI:http://localhost:7080/realms/christmasletterhandlingdev/protocol/openid-connect/certs}
+
 letter-processor:
     aws:
       sqs:
         queue-url: ${AWS_SQS_QUEUE_URL}
+
+logging:
+  level:
+    org:
+      springframework:
+        security: ${SPRING_SECURITY_LOG_LEVEL:ERROR}

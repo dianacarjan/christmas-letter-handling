@@ -1,5 +1,6 @@
 package com.christmas.letter.sender.controller;
 
+import com.christmas.letter.sender.config.TestSecurityConfig;
 import com.christmas.letter.sender.helper.LetterUtils;
 import com.christmas.letter.sender.model.Letter;
 import com.christmas.letter.sender.service.LetterSenderService;
@@ -10,6 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.MessagingException;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(LetterController.class)
+@Import(TestSecurityConfig.class)
 class LetterControllerTest {
     @Autowired
     private MockMvc mockMvc;

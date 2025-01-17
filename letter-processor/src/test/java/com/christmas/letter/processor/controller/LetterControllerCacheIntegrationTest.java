@@ -1,5 +1,6 @@
 package com.christmas.letter.processor.controller;
 
+import com.christmas.letter.processor.config.TestSecurityConfig;
 import com.christmas.letter.processor.helper.LetterUtils;
 import com.christmas.letter.processor.helper.RedisTestContainer;
 import com.christmas.letter.processor.listener.LetterSqsListener;
@@ -17,8 +18,10 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.*;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -38,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @EnableAutoConfiguration(exclude = {DynamoDbAutoConfiguration.class})
 @ExtendWith(MockitoExtension.class)
+@Import(TestSecurityConfig.class)
 @TestPropertySource("classpath:config-test.properties")
 class LetterControllerCacheIntegrationTest extends RedisTestContainer {
     @Autowired
@@ -66,10 +70,11 @@ class LetterControllerCacheIntegrationTest extends RedisTestContainer {
     }
 
     @Test
+    @WithMockUser(roles = {"SANTA"})
     void givenPage_whenGetMethod_thenReturnCachedLetters() throws Exception {
         //Arrange
         Letter christmasLetter = LetterUtils.generateLetter();
-        Pageable pageRequest =  PageRequest.of(0, 10, Sort.by("email"));
+        Pageable pageRequest = PageRequest.of(0, 10, Sort.by("email"));
         List<Letter> content = new ArrayList<>();
         content.add(christmasLetter);
         Page<Letter> result = new PageImpl<>(content, pageRequest, 1);
