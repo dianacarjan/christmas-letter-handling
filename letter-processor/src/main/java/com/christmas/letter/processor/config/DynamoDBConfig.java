@@ -6,13 +6,17 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.christmas.letter.processor.repository.LetterRepository;
 import org.socialsignin.spring.data.dynamodb.repository.config.EnableDynamoDBRepositories;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 
 @Configuration
-@EnableDynamoDBRepositories(basePackages = {"com.christmas.letter.processor.repository"})
+@EnableDynamoDBRepositories(
+        basePackages = "com.christmas.letter.processor.repository",
+        includeFilters = {
+                @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {LetterRepository.class})
+        })
 public class DynamoDBConfig {
     @Value("${spring.cloud.aws.credentials.access-key}")
     private String accessKey;

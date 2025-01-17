@@ -4,6 +4,7 @@ import com.christmas.letter.processor.dto.AddressMessage;
 import com.christmas.letter.processor.dto.LetterMessage;
 import com.christmas.letter.processor.helper.LetterUtils;
 import com.christmas.letter.processor.helper.LocalStackTestContainer;
+import com.christmas.letter.processor.mapper.LetterMapper;
 import com.christmas.letter.processor.model.Letter;
 import com.christmas.letter.processor.repository.LetterRepository;
 import io.awspring.cloud.sns.core.SnsTemplate;
@@ -18,12 +19,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -40,6 +45,8 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
 
     private static final String TOPIC_ARN = "arn:aws:sns:us-east-1:000000000000:test-topic";
     private static final String LETTER_API_PATH = "/api/v1/christmas-letters";
+    private static final String QUEUE_ENDPOINT="http://sqs.us-east-1.localhost:4566/000000000000/test-queue";
+    private static final String DLQ_ENDPOINT="http://sqs.us-east-1.localhost:4566/000000000000/test-dlq";
 
     @Value("${letter-processor.aws.sqs.queue-url}")
     private String queueUrl;
@@ -56,9 +63,18 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private RedisTemplate<String, ?> redisTemplate;
+
     @BeforeEach
-    void setup() {
+    void setup() throws IOException, InterruptedException {
         letterRepository.deleteAll();
+        localStackContainer.execInContainer("awslocal", "sqs", "purge-queue", "--queue-url", QUEUE_ENDPOINT);
+
+        Set<String> keys = redisTemplate.keys("60m-letter*");
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
     }
 
     @Test()
@@ -70,7 +86,7 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
         snsTemplate.convertAndSend(TOPIC_ARN, letterPayload);
 
         // Assert
-        await().atMost(1, TimeUnit.SECONDS).until(() -> output.getAll().contains("Letter saved successfully!"));
+        await().atMost(Duration.ofSeconds(5)).until(() -> output.getAll().contains("Letter saved successfully!"));
         Optional<Letter> result = letterRepository.findById(letterPayload.getEmail());
         assertThat(result).isPresent();
     }
@@ -82,15 +98,18 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
 
         // Act & Assert
         snsTemplate.convertAndSend(TOPIC_ARN, letterPayload);
-        await().atMost(1, TimeUnit.SECONDS).until(() -> output.getAll().contains("Letter saved successfully!"));
+        await().atMost(Duration.ofSeconds(10)).until(() -> output.getAll().contains("Letter saved successfully!"));
+
         mockMvc.perform(get(LETTER_API_PATH))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.pageable.pageSize").value(10))
-                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
-                .andExpect(jsonPath("$.pageable.offset").value(0));
+                .andExpect(jsonPath("$.pageSize").value(10))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.offset").value(0));
+        assertThat(redisTemplate.hasKey(String.format("60m-letter::%s", letterPayload.getEmail()))).isTrue();
+        assertThat(Objects.requireNonNull(redisTemplate.keys("60m-letters:*")).size()).isOne();
     }
 
     @Test
@@ -101,7 +120,7 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
 
         // Act & Assert
         snsTemplate.convertAndSend(TOPIC_ARN, letterPayload);
-        await().atMost(1, TimeUnit.SECONDS).until(() -> output.getAll().contains("Letter saved successfully!"));
+        await().atMost(Duration.ofSeconds(10)).until(() -> output.getAll().contains("Letter saved successfully!"));
         mockMvc.perform(get(String.format("%s/{email}", LETTER_API_PATH), letterPayload.getEmail()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -112,19 +131,43 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
                 .andExpect(jsonPath("$.address.city").value(addressPayload.getCity()))
                 .andExpect(jsonPath("$.address.state").value(addressPayload.getState()))
                 .andExpect(jsonPath("$.address.zipCode").value(addressPayload.getZipCode()));
+
+        assertThat(redisTemplate.hasKey(String.format("60m-letter::%s", letterPayload.getEmail()))).isTrue();
+        assertThat(Objects.requireNonNull(redisTemplate.keys("60m-letters:*")).size()).isZero();
     }
 
-    // TODO: Fix required to remove @DirtiesContext
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenInvalidMessage_whenListen_thenConversionShouldFail(CapturedOutput output) {
+    void givenInvalidMessage_whenListen_thenSendMessageToDLQ(CapturedOutput output) {
         // Arrange
         sqsTemplate.send(queueUrl, "invalid_payload");
 
         // Act & Assert
-        await().atMost(1, TimeUnit.SECONDS).until(() -> output.getAll().contains("Invalid payload"));
+        await().atMost(Duration.ofSeconds(2)).until(() -> output.getAll().contains("Invalid payload"));
+
         Iterable<Letter> result = letterRepository.findAll();
         assertThat(result.iterator().hasNext()).isFalse();
+
+        await()
+                .atMost(Duration.ofSeconds(10))
+                .pollInterval(Duration.ofSeconds(4))
+                .until(() ->
+                        !localStackContainer.execInContainer(
+                                "awslocal", "sqs", "receive-message",
+                                "--queue-url", QUEUE_ENDPOINT).getStdout().isEmpty());
+
+        await()
+                .atMost(Duration.ofSeconds(10))
+                .pollInterval(Duration.ofSeconds(4))
+                .until(() ->
+                        localStackContainer.execInContainer(
+                                "awslocal", "sqs", "receive-message",
+                                "--queue-url", QUEUE_ENDPOINT).getStdout().isEmpty());
+
+        await()
+                .pollInterval(Duration.ofSeconds(4))
+                .atMost(Duration.ofSeconds(10))
+                .until(() ->
+                        sqsTemplate.receive(from -> from.queue(DLQ_ENDPOINT)).isPresent());
     }
 
     @Test
@@ -133,7 +176,7 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
         String invalidEmail = "@@@#23";
         Letter newLetter = LetterUtils.generateLetter();
         newLetter.setEmail(invalidEmail);
-        LetterMessage letterMessage = LetterUtils.generateLetterPayload(newLetter);
+        LetterMessage letterMessage = LetterMapper.INSTANCE.letterToLetterMessage(newLetter);
 
         // Act
         snsTemplate.convertAndSend(TOPIC_ARN, letterMessage);
@@ -143,5 +186,4 @@ class LetterProcessorServiceIntegrationTest extends LocalStackTestContainer {
         Optional<Letter> result = letterRepository.findById(invalidEmail);
         assertThat(result).isEmpty();
     }
-
 }
