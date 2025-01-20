@@ -1,0 +1,51 @@
+name: Build Pipeline for Christmas Letter Handling Project
+
+on:
+  pull_request:
+    branches:
+      - master
+
+env:
+  DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_REPO}}
+  DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME}}
+  DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD}}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        modules: [letter-sender-service, letter-processor-service]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          java-versions: 17
+          distributions: temurin
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ matrix.module }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+
+      - name: Run Test and Collect Coverage
+        run: mvn -pl ${matrix.module} verify
+
+      - name: Login to Docker Hub
+        run: |
+          docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+
+      - name: Build Docker Image
+        run: mvn -pl ${matrix.module} clean package spring-boot:build-image
+
+      - name: Push Docker Image
+        run: |
+          docker tag ${matrix.module}:latest ${DOCKER_HUB_REPO/${matrix.module}:latest
+          docker push ${DOCKER_HUB_REPO/${matrix.module}:latest

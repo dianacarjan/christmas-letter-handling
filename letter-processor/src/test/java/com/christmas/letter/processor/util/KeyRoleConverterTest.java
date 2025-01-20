@@ -67,4 +67,16 @@ class KeyRoleConverterTest {
         // Assert
         assertThat(grantedAuthorities).isEmpty();
     }
+
+    @Test
+    void givenMissingRealmField_whenConverting_thenReturnEmptyList() {
+        // Arrange
+        Jwt jwt = mock(Jwt.class);
+
+        // Act
+        Collection<GrantedAuthority> grantedAuthorities = keyRoleConverter.convert(jwt);
+
+        // Assert
+        assertThat(grantedAuthorities).isEmpty();
+    }
 }
