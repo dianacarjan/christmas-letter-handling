@@ -4,18 +4,18 @@ on:
   pull_request:
     branches:
       - master
+  workflow_dispatch:
 
 env:
-  DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_REPO}}
-  DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME}}
-  DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD}}
+  DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+  DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        modules: [letter-sender-service, letter-processor-service]
+        module: [letter-sender, letter-processor]
 
     steps:
       - name: Checkout Code
@@ -24,8 +24,8 @@ jobs:
       - name: Setup JDK
         uses: actions/setup-java@v3
         with:
-          java-versions: 17
-          distributions: temurin
+          java-version: 17
+          distribution: temurin
 
       - name: Cache Maven Dependencies
         uses: actions/cache@v3
@@ -35,17 +35,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
-      - name: Run Test and Collect Coverage
-        run: mvn -pl ${matrix.module} verify
+      - name: Run Test and Check Coverage
+        run: mvn -pl ${{ matrix.module }} verify
+
+      - name: Build Docker Image
+        run: mvn -pl ${{ matrix.module }} clean package -DskipTests spring-boot:build-image
 
       - name: Login to Docker Hub
         run: |
           docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
 
-      - name: Build Docker Image
-        run: mvn -pl ${matrix.module} clean package spring-boot:build-image
-
       - name: Push Docker Image
         run: |
-          docker tag ${matrix.module}:latest ${DOCKER_HUB_REPO/${matrix.module}:latest
-          docker push ${DOCKER_HUB_REPO/${matrix.module}:latest
+          docker tag docker.io/library/${{ matrix.module }}-service:latest $DOCKER_HUB_USERNAME/${{ matrix.module }}-service:latest
+          docker push $DOCKER_HUB_USERNAME/${{ matrix.module }}-service:latest
