@@ -34,6 +34,9 @@ class ConfigurableRedisCacheResolverTest {
     @Mock
     private RedisCacheWriter redisCacheWriter;
 
+    @Mock
+    private CacheOperationInvocationContext<CacheOperation> context;
+
     @BeforeEach
     void setup(){
         cacheResolver = new ConfigurableRedisCacheResolver(cacheManager);
@@ -46,7 +49,6 @@ class ConfigurableRedisCacheResolverTest {
         when(cacheManager.getCache(cacheName)).thenReturn(redisCache);
         when(redisCache.getNativeCache()).thenReturn(redisCacheWriter);
 
-        CacheOperationInvocationContext<CacheOperation> context = mock(CacheOperationInvocationContext.class);
         var operation = mock(CacheOperation.class);
         when(context.getOperation()).thenReturn(operation);
         when(operation.getCacheNames()).thenReturn(Set.of(cacheName));
@@ -63,7 +65,6 @@ class ConfigurableRedisCacheResolverTest {
     @Test
     void givenNoCaches_whenResolveCaches_thenReturnEmptyList() {
         // Arrange
-        CacheOperationInvocationContext<CacheOperation> context = mock(CacheOperationInvocationContext.class);
         var operation = mock(CacheOperation.class);
         when(context.getOperation()).thenReturn(operation);
         when(operation.getCacheNames()).thenReturn(Collections.emptySet());

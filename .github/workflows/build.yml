@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: [letter-sender]
+        module: [letter-sender, letter-processor]
 
     steps:
       - name: Checkout Code
@@ -35,12 +35,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
-      - name: Run Test and Check Coverage
-        run: mvn -pl ${{ matrix.module }}  clean install -DskipTests
-
-      - name: List generated files
-        run: |
-          ls -R ${{ matrix.module }}/target
+      - name: Build, Test and Package
+        run: mvn -pl ${{ matrix.module }}  clean install
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v4
@@ -49,13 +45,13 @@ jobs:
         with:
           projectBaseDir: ${{ matrix.module }}
           args: >
-            -Dsonar.projectKey=dianacarjan_christmas-letter-handling
-            -Dsonar.organization=dianacarjan
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
             -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.java.binaries=${{ matrix.module }}/target/classes
+            -Dsonar.java.binaries=.
 
       - name: Build Docker Image
-        run: mvn -pl ${{ matrix.module }} clean package -DskipTests spring-boot:build-image
+        run: mvn -pl ${{ matrix.module }} spring-boot:build-image
 
       - name: Login to Docker Hub
         run: |

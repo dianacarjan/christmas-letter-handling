@@ -1,5 +1,6 @@
 package com.christmas.letter.processor.util.cache;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,13 +32,13 @@ public class ConfigurableRedisCacheResolver implements CacheResolver {
     private int cacheTTL;
 
     @Override
-    public  Collection<? extends Cache> resolveCaches(CacheOperationInvocationContext<?> context) {
+    public  Collection<? extends Cache> resolveCaches(@NonNull CacheOperationInvocationContext<?> context) {
         return context.getOperation()
                 .getCacheNames()
                 .stream().map(cacheName -> {
                     Cache cache = cacheManager.getCache(cacheName);
 
-                    return cache != null ? cacheWithCustomTTL(cacheName, cache) : cache;
+                    return cache != null ? cacheWithCustomTTL(cacheName, cache) : null;
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -58,8 +59,14 @@ public class ConfigurableRedisCacheResolver implements CacheResolver {
     }
 
     private int getCacheTTL(String cacheName) {
-        String[] nameParts = cacheName.split("-");
+        try {
+            String[] nameParts = cacheName.split("-");
 
-        return nameParts.length > 0 ? Integer.parseInt(cacheName.substring(0, nameParts[0].length() - 1)) : cacheTTL;
+            return nameParts.length > 0 ? Integer.parseInt(cacheName.substring(0, nameParts[0].length() - 1)) : cacheTTL;
+        } catch (NumberFormatException ex){
+            log.warn("Invalid cache TTL format for chache name: {}",cacheName, ex);
+
+            return cacheTTL;
+        }
     }
 }
