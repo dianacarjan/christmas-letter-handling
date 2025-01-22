@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: [letter-sender, letter-processor]
+        module: [letter-sender]
 
     steps:
       - name: Checkout Code
