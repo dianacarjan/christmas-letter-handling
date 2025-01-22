@@ -35,21 +35,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
-      - name: Build, Test and Package
-        run: mvn -pl ${{ matrix.module }}  clean install
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
 
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v4
+      - name: Build, Test and Package
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: ${{ matrix.module }}
-          args: >
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
-            -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.java.binaries=.
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+        run: |
+          mvn -pl ${{ matrix.module }} clean install \
+          org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectBaseDir=${{ matrix.module }} \
+          -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}\
+          -Dsonar.java.binaries=. \
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
 
       - name: Build Docker Image
         run: mvn -pl ${{ matrix.module }} spring-boot:build-image
