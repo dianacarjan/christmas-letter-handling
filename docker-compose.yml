@@ -28,6 +28,8 @@ services:
       spring.cloud.aws.credentials.secret-key: test
       spring.cloud.aws.sns.region: 'us-east-1'
       letter-sender.aws.sns.topic-arn: 'arn:aws:sns:us-east-1:000000000000:christmas-letter-creation'
+      spring.security.oauth2.resourceserver.jwt.issuer-uri: "http://localhost:7080/realms/christmasletterhandlingdev"
+      spring.security.oauth2.resourceserver.jwt.jwk-set-uri: "http://keycloak-service:7080/realms/christmasletterhandlingdev/protocol/openid-connect/certs"
     networks:
       - christmas
 
@@ -51,6 +53,8 @@ services:
       spring.data.redis.port: '6379'
       spring.data.redis.ttl: '60'
       letter-processor.aws.sqs.queue-url: 'http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/christmas-letter-processing'
+      spring.security.oauth2.resourceserver.jwt.issuer-uri: "http://localhost:7080/realms/christmasletterhandlingdev"
+      spring.security.oauth2.resourceserver.jwt.jwk-set-uri: "http://keycloak-service:7080/realms/christmasletterhandlingdev/protocol/openid-connect/certs"
     networks:
       - christmas
 
@@ -64,6 +68,30 @@ services:
       - redis-data:/data
     networks:
       - christmas
+
+  keycloak-service:
+    image: quay.io/keycloak/keycloak:24.0
+    environment:
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 7080
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "true"
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      KC_LOG_LEVEL: info
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:7080/health/ready" ]
+      interval: 15s
+      timeout: 2s
+      retries: 15
+    command: [ "start-dev", "--http-port", "7080", "--https-port", "7443" ]
+    ports:
+      - 7080:7080
+      - 7443:7443
+    networks:
+      - christmas
+
 networks:
   christmas:
 volumes:

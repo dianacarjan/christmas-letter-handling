@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -66,10 +67,11 @@ class LetterControllerCacheIntegrationTest extends RedisTestContainer {
     }
 
     @Test
+    @WithMockUser(roles = {"SANTA"})
     void givenPage_whenGetMethod_thenReturnCachedLetters() throws Exception {
         //Arrange
         Letter christmasLetter = LetterUtils.generateLetter();
-        Pageable pageRequest =  PageRequest.of(0, 10, Sort.by("email"));
+        Pageable pageRequest = PageRequest.of(0, 10, Sort.by("email"));
         List<Letter> content = new ArrayList<>();
         content.add(christmasLetter);
         Page<Letter> result = new PageImpl<>(content, pageRequest, 1);

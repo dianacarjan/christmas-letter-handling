@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -43,6 +44,7 @@ class LetterControllerIntegrationTest extends LocalStackTestContainer {
 
     @ParameterizedTest
     @MethodSource("provideLetters")
+    @WithMockUser(roles = {"SANTA"})
     void givenPage_whenGetMethod_thenReturnPageLetters(Pageable pageable, List<Letter> letters) throws Exception {
         // Arrange
         letterRepository.saveAll(letters);
@@ -60,6 +62,7 @@ class LetterControllerIntegrationTest extends LocalStackTestContainer {
     }
 
     @Test
+    @WithMockUser(roles = {"SANTA"})
     void givenUnsavedEmail_whenGetByEmail_thenThrowNotFoundException() throws Exception {
         // Arrange
         String email = "test@example.com";
@@ -71,6 +74,7 @@ class LetterControllerIntegrationTest extends LocalStackTestContainer {
     }
 
     @Test
+    @WithMockUser(roles = {"SANTA"})
     void givenInvalidEmail_whenGetByEmail_thenThrowValidationException() throws Exception {
         // Arrange
         String email = "invalid_email";
