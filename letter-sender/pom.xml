@@ -68,8 +68,7 @@
 				<version>0.8.12</version>
 				<configuration>
 					<excludes>
-						<exclude>com/christmas/letter/processor/**/LetterProcessorApplication.*</exclude>
-						<exclude>com/christmas/letter/processor/mapper/*Impl*</exclude>
+						<exclude>com/christmas/letter/sender/**/LetterSenderApplication.*</exclude>
 						<exclude>**/*Builder*</exclude>
 					</excludes>
 				</configuration>
