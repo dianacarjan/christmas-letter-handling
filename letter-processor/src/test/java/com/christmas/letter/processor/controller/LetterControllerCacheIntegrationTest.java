@@ -7,6 +7,7 @@ import com.christmas.letter.processor.model.Letter;
 import com.christmas.letter.processor.repository.LetterRepository;
 import com.christmas.letter.processor.service.LetterProcessorService;
 import io.awspring.cloud.autoconfigure.dynamodb.DynamoDbAutoConfiguration;
+import io.awspring.cloud.autoconfigure.sns.SnsAutoConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@EnableAutoConfiguration(exclude = {DynamoDbAutoConfiguration.class})
+@EnableAutoConfiguration(exclude = {DynamoDbAutoConfiguration.class, SnsAutoConfiguration.class})
 @ExtendWith(MockitoExtension.class)
 @TestPropertySource("classpath:config-test.properties")
 class LetterControllerCacheIntegrationTest extends RedisTestContainer {
