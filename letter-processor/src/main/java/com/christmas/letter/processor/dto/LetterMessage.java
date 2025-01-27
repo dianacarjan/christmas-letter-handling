@@ -16,15 +16,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LetterMessage {
-    @Email(message = "Email is not valid")
-    private String email;
-    @NotBlank(message = "Name is empty")
-    private String name;
-    @NotBlank(message = "Wishes is required")
-    private String wishes;
-    @Valid
-    @NotNull(message = "Address is required")
-    private AddressMessage address;
+	@Email(message = "Email is not valid")
+	private String email;
+
+	@NotBlank(message = "Name is empty")
+	private String name;
+
+	@NotBlank(message = "Wishes is required")
+	private String wishes;
+
+	@Valid
+	@NotNull(message = "Address is required") private AddressMessage address;
 }
-
-
