@@ -1,5 +1,9 @@
 package com.christmas.letter.processor.util.cache;
 
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,11 +19,6 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
-
-import java.time.Duration;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
