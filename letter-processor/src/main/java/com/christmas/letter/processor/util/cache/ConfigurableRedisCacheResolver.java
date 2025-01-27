@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class ConfigurableRedisCacheResolver implements CacheResolver {
     private final CacheManager cacheManager;
 
-    @Value("${spring.data.redis.port}")
+    @Value("${spring.data.redis.ttl}")
     private int cacheTTL;
 
     @Override
