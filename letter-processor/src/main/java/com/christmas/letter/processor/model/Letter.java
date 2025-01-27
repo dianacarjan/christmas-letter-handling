@@ -9,16 +9,16 @@ import lombok.*;
 @NoArgsConstructor
 @DynamoDBTable(tableName = "ChristmasLetters")
 public class Letter {
-    @DynamoDBHashKey(attributeName = "Email")
-    private String email;
+	@DynamoDBHashKey(attributeName = "Email")
+	private String email;
 
-    @DynamoDBAttribute(attributeName = "Name")
-    private String name;
+	@DynamoDBAttribute(attributeName = "Name")
+	private String name;
 
-    @DynamoDBAttribute(attributeName = "Wishes")
-    private String wishes;
+	@DynamoDBAttribute(attributeName = "Wishes")
+	private String wishes;
 
-    @DynamoDBTypeConvertedJson
-    @DynamoDBAttribute(attributeName = "Address")
-    private Address address;
+	@DynamoDBTypeConvertedJson
+	@DynamoDBAttribute(attributeName = "Address")
+	private Address address;
 }

@@ -1,6 +1,5 @@
 package com.christmas.letter.sender.config;
 
-
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +13,6 @@ import org.springframework.validation.annotation.Validated;
 @Configuration
 @ConfigurationProperties(prefix = "letter-sender.aws.sns")
 public class SnsConfigProperties {
-    @NotBlank(message = "SNS topic ARN must be configured")
-    private String topicArn;
+	@NotBlank(message = "SNS topic ARN must be configured")
+	private String topicArn;
 }

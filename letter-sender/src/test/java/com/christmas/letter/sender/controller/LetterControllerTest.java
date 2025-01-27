@@ -1,5 +1,10 @@
 package com.christmas.letter.sender.controller;
 
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.christmas.letter.sender.config.TestSecurityConfig;
 import com.christmas.letter.sender.helper.LetterUtils;
 import com.christmas.letter.sender.model.Letter;
@@ -16,60 +21,56 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.MessagingException;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.doThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(LetterController.class)
 @Import(TestSecurityConfig.class)
 class LetterControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
+	@Autowired private MockMvc mockMvc;
 
-    @MockBean
-    private LetterSenderService letterSenderService;
+	@MockBean private LetterSenderService letterSenderService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+	@Autowired private ObjectMapper objectMapper;
 
-    private static final String CREATE_LETTER_API_PATH = "/api/v1/christmas-letters";
+	private static final String CREATE_LETTER_API_PATH = "/api/v1/christmas-letters";
 
-    @Test
-    void should_returnCreatedStatus_ifValidRequest() throws Exception {
-        // Arrange
-        Letter christmasLetter = LetterUtils.generateLetter(LetterUtils.generateAddress());
+	@Test
+	void should_returnCreatedStatus_ifValidRequest() throws Exception {
+		// Arrange
+		Letter christmasLetter = LetterUtils.generateLetter(LetterUtils.generateAddress());
 
-        // Act & Assert
-        mockMvc.perform(post(CREATE_LETTER_API_PATH)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(christmasLetter)))
-                .andExpect(status().isCreated());
-    }
+		// Act & Assert
+		mockMvc.perform(
+						post(CREATE_LETTER_API_PATH)
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(christmasLetter)))
+				.andExpect(status().isCreated());
+	}
 
-    @Test
-    void should_returnInternalErrorServer_ifMessagingFails() throws Exception {
-        // Arrange
-        Letter christmasLetter = LetterUtils.generateLetter(LetterUtils.generateAddress());
-        doThrow(MessagingException.class).when(letterSenderService).sendLetter(christmasLetter);
+	@Test
+	void should_returnInternalErrorServer_ifMessagingFails() throws Exception {
+		// Arrange
+		Letter christmasLetter = LetterUtils.generateLetter(LetterUtils.generateAddress());
+		doThrow(MessagingException.class).when(letterSenderService).sendLetter(christmasLetter);
 
-        // Act & Assert
-        mockMvc.perform(post(CREATE_LETTER_API_PATH)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(christmasLetter)))
-                .andExpect(status().isInternalServerError())
-                .andExpect((jsonPath("$.message").value("Publishing message to SNS failed!")));
-    }
+		// Act & Assert
+		mockMvc.perform(
+						post(CREATE_LETTER_API_PATH)
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(christmasLetter)))
+				.andExpect(status().isInternalServerError())
+				.andExpect((jsonPath("$.message").value("Publishing message to SNS failed!")));
+	}
 
-    @ParameterizedTest
-    @MethodSource("com.christmas.letter.sender.helper.LetterUtils#provideInvalidLetters")
-    void should_returnBadRequest_ifInvalidRequest(Letter letter, String expectedOutput) throws Exception {
-        // Arrange & Act & Assert
-        mockMvc.perform(post(CREATE_LETTER_API_PATH)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(letter)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Validation failed!"))
-                .andExpect(jsonPath("$.details[0]").value(expectedOutput));
-    }
+	@ParameterizedTest
+	@MethodSource("com.christmas.letter.sender.helper.LetterUtils#provideInvalidLetters")
+	void should_returnBadRequest_ifInvalidRequest(Letter letter, String expectedOutput)
+			throws Exception {
+		// Arrange & Act & Assert
+		mockMvc.perform(
+						post(CREATE_LETTER_API_PATH)
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(letter)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Validation failed!"))
+				.andExpect(jsonPath("$.details[0]").value(expectedOutput));
+	}
 }

@@ -19,17 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LetterController {
 
-    private final LetterProcessorService letterProcessorService;
+	private final LetterProcessorService letterProcessorService;
 
-    @GetMapping
-    @PreAuthorize("hasRole('ROLE_SANTA')")
-    CachedPage<Letter> getAll(@PageableDefault Pageable pageable) {
-        return letterProcessorService.getAll(pageable);
-    }
+	@GetMapping
+	@PreAuthorize("hasRole('ROLE_SANTA')")
+	CachedPage<Letter> getAll(@PageableDefault Pageable pageable) {
+		return letterProcessorService.getAll(pageable);
+	}
 
-    @GetMapping("/{email}")
-    @PreAuthorize("hasRole('ROLE_SANTA')")
-    Letter getByEmail(@Valid @Email(message = "Invalid email") @PathVariable String email) {
-        return letterProcessorService.getLetterByEmail(email);
-    }
+	@GetMapping("/{email}")
+	@PreAuthorize("hasRole('ROLE_SANTA')")
+	Letter getByEmail(@Valid @Email(message = "Invalid email") @PathVariable String email) {
+		return letterProcessorService.getLetterByEmail(email);
+	}
 }

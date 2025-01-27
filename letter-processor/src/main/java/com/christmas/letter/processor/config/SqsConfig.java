@@ -13,21 +13,22 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 @Configuration
 public class SqsConfig {
 
-    @Bean
-    public SqsMessageListenerContainerFactory<Object> defaultSqsListenerContainerFactory(
-            SqsAsyncClient sqsAsyncClient, ObjectMapper objectMapper) {
+	@Bean
+	public SqsMessageListenerContainerFactory<Object> defaultSqsListenerContainerFactory(
+			SqsAsyncClient sqsAsyncClient, ObjectMapper objectMapper) {
 
-        return SqsMessageListenerContainerFactory.builder()
-                .sqsAsyncClient(sqsAsyncClient)
-                .configure(options -> options.messageConverter(new SqsMessageConverter(objectMapper)))
-                .build();
-    }
+		return SqsMessageListenerContainerFactory.builder()
+				.sqsAsyncClient(sqsAsyncClient)
+				.configure(
+						options -> options.messageConverter(new SqsMessageConverter(objectMapper)))
+				.build();
+	}
 
-    @Bean
-    public ObjectMapper customObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	@Bean
+	public ObjectMapper customObjectMapper() {
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        return objectMapper;
-    }
+		return objectMapper;
+	}
 }

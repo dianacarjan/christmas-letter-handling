@@ -8,8 +8,9 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface LetterMapper {
-    LetterMapper INSTANCE = Mappers.getMapper(LetterMapper.class);
+	LetterMapper INSTANCE = Mappers.getMapper(LetterMapper.class);
 
-    LetterMessage letterToLetterMessage(Letter letter);
-    Letter letterMessageToLetter(LetterMessage letterMessage);
+	LetterMessage letterToLetterMessage(Letter letter);
+
+	Letter letterMessageToLetter(LetterMessage letterMessage);
 }

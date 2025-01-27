@@ -9,10 +9,11 @@ import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
 @EnableCaching
-@EnableAutoConfiguration(exclude = {RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class })
+@EnableAutoConfiguration(
+		exclude = {RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class})
 public class LetterProcessorApplication {
 
-    public static void main(String... args) {
-        SpringApplication.run(LetterProcessorApplication.class, args);
-    }
+	public static void main(String... args) {
+		SpringApplication.run(LetterProcessorApplication.class, args);
+	}
 }
