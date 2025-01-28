@@ -13,15 +13,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @DynamoDBDocument
 public class Address {
-    @DynamoDBAttribute(attributeName = "Street")
-    private String street;
+	@DynamoDBAttribute(attributeName = "Street")
+	private String street;
 
-    @DynamoDBAttribute(attributeName = "City")
-    private String city;
+	@DynamoDBAttribute(attributeName = "City")
+	private String city;
 
-    @DynamoDBAttribute(attributeName = "State")
-    private String state;
+	@DynamoDBAttribute(attributeName = "State")
+	private String state;
 
-    @DynamoDBAttribute(attributeName = "ZipCode")
-    private String zipCode;
+	@DynamoDBAttribute(attributeName = "ZipCode")
+	private String zipCode;
 }

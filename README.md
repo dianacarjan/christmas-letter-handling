@@ -20,7 +20,7 @@ Challenge  #1
            - https://whattodevnow.medium.com/using-localstack-with-docker-compose-to-mock-aws-services-bb25a5b01d4b
   
    - Implement the first REST endpoint that allows anyone to publish a letter to Santa. The purpose of this endpoint is to simply publish the JSON representation of the letter to the SNS topic.
- 
+
  
 Notes:
    - Write the code as if it were production code (clean code, handle negative scenarios, validations etc.)

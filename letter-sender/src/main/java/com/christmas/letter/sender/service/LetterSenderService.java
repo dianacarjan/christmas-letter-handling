@@ -12,13 +12,13 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LetterSenderService {
 
-    private final SnsTemplate snsTemplate;
+	private final SnsTemplate snsTemplate;
 
-    private final SnsConfigProperties snsConfigProperties;
+	private final SnsConfigProperties snsConfigProperties;
 
-    public void sendLetter(Letter letter) {
-        final String topicArn = snsConfigProperties.getTopicArn();
-        snsTemplate.convertAndSend(topicArn, letter);
-        log.info("Successfully published message to topic ARN: {}", topicArn);
-    }
+	public void sendLetter(Letter letter) {
+		final String topicArn = snsConfigProperties.getTopicArn();
+		snsTemplate.convertAndSend(topicArn, letter);
+		log.info("Successfully published message to topic ARN: {}", topicArn);
+	}
 }

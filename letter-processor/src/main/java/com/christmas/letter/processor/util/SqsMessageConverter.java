@@ -13,25 +13,24 @@ import software.amazon.awssdk.services.sqs.model.Message;
 @RequiredArgsConstructor
 public class SqsMessageConverter extends SqsMessagingMessageConverter {
 
-    private final ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
-    @Override
-    protected Object getPayloadToDeserialize(Message message) {
-        String body = message.body();
-        log.info("Deserializing SQS message {} ", body);
+	@Override
+	protected Object getPayloadToDeserialize(Message message) {
+		String body = message.body();
+		log.info("Deserializing SQS message {} ", body);
 
-        return unwrap(body);
-    }
+		return unwrap(body);
+	}
 
-    private String unwrap(String message) {
-        try {
-            JsonNode node = objectMapper.readTree(message);
+	private String unwrap(String message) {
+		try {
+			JsonNode node = objectMapper.readTree(message);
 
-            return node.path("Message")
-                    .asText();
-        } catch (JsonProcessingException ex) {
-            log.error(ex.getMessage());
-            throw new LetterDeserializationException("Invalid payload");
-        }
-    }
+			return node.path("Message").asText();
+		} catch (JsonProcessingException ex) {
+			log.error(ex.getMessage());
+			throw new LetterDeserializationException("Invalid payload");
+		}
+	}
 }

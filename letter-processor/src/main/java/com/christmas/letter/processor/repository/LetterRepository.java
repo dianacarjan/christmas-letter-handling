@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 @EnableScanCount
 @EnableScan
-public interface LetterRepository extends DynamoDBCrudRepository<Letter, String>,
-        DynamoDBPagingAndSortingRepository<Letter, String> {
-}
+public interface LetterRepository
+		extends DynamoDBCrudRepository<Letter, String>,
+				DynamoDBPagingAndSortingRepository<Letter, String> {}
